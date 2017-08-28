@@ -99,6 +99,7 @@ public class InsertDataTrigger implements ITrigger {
             e.printStackTrace();
         }
 
+        System.out.println("End of trigger");
         return Collections.emptyList();
     }
 }
