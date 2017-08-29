@@ -5,12 +5,17 @@ import org.apache.cassandra.db.partitions.Partition;
 import org.apache.cassandra.db.rows.Cell;
 import org.apache.cassandra.db.rows.Unfiltered;
 import org.apache.cassandra.db.rows.UnfilteredRowIterator;
+import org.apache.cassandra.io.util.FileUtils;
 import org.apache.cassandra.triggers.ITrigger;
+import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.json.simple.JSONObject;
 
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -39,13 +44,13 @@ public class InsertDataTrigger implements ITrigger {
                 Unfiltered un = it.next();
                 Clustering clt = (Clustering) un.clustering();
 
-                message.put("partitionkey", new String(update.partitionKey().getKey().array()));
+                message.put("channel", new String(update.partitionKey().getKey().array()));
 
                 System.out.println("clt.toString(cfMetaData) " + clt.toString(cfMetaData));
                 System.out.println("clt.getRawValues() " + new String(clt.getRawValues()[0].array()));
                 System.out.println("partition.columns().toString() " + update.columns().toString());
 
-                message.put("datetime", new String(clt.getRawValues()[0].array()));
+                message.put("timestamp", new String(clt.getRawValues()[0].array()));
 
                 Iterator<Cell> cells = update.getRow(clt).cells().iterator();
 
@@ -63,34 +68,21 @@ public class InsertDataTrigger implements ITrigger {
                 while (cells.hasNext()) {
                     Cell cell = cells.next();
                     System.out.println("cell.column().name.toString() " + cell.column().name.toString());
-                    System.out.println("cell.toString()" + cell.toString());
-                    Double x = cell.value().getDouble();
-                    System.out.println("cell.value().getDouble() " + x);
-                    //if(cell.column().name.toString() == "value")
-                    System.out.println(x);
-                    message.put(cell.column().name.toString(), x);
-                    //else
-                    //   message.put(cell.column().name.toString(),cell.value().toString());
+                    //System.out.println("cell.toString()" + cell.toString());
+                    ByteBuffer cellValue = ByteBufferUtil.clone(cell.value());
+                    Float value = cellValue.getFloat();
+                    System.out.println("copied cellValue " + value);
+                    message.put(cell.column().name.toString(), value);
                 }
-                System.out.println("un.toString()" + un.toString(cfMetaData));
+                //System.out.println("un.toString()" + un.toString(cfMetaData));
 
                 if (!message.isEmpty()) {
                     System.out.println(message.toString());
 
-                    //Sending data to kafka
-                    Properties props = new Properties();
-                    props.put("bootstrap.servers", "localhost:9092");
-                    props.put("acks", "all");
-                    props.put("retries", 0);
-                    props.put("batch.size", 16384);
-                    props.put("linger.ms", 1);
-                    props.put("buffer.memory", 33554432);
-                    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-                    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-
-                    Producer<String, String> producer = new KafkaProducer<>(props);
-                    producer.send(new ProducerRecord<>("test", message.toString()));//move topic name to some properties
-                    producer.close();
+                        Properties props = loadProperties();
+                        Producer<String, String> producer = new KafkaProducer<>(props, new StringSerializer(), new StringSerializer());
+                        producer.send(new ProducerRecord<>(props.getProperty("topic"), message.toString()));//move topic name to some properties
+                        producer.close();
                 }
 
 
@@ -100,6 +92,28 @@ public class InsertDataTrigger implements ITrigger {
         }
 
         System.out.println("End of trigger");
-        return Collections.emptyList();
+        return null;
+        //return Collections.emptyList();
+    }
+
+
+    private static Properties loadProperties()
+    {
+        System.out.println("Loading Properties");
+        Properties properties = new Properties();
+        InputStream stream = InsertDataTrigger.class.getClassLoader().getResourceAsStream("InsertDataTrigger.properties");
+        try
+        {
+            properties.load(stream);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        finally
+        {
+            FileUtils.closeQuietly(stream);
+        }
+        return properties;
     }
 }
