@@ -45,7 +45,7 @@ public class InsertDataTrigger implements ITrigger {
 
                         Clustering clt = (Clustering) un.clustering();
 
-                        message.put("channel", new String(update.partitionKey().getKey().array()));
+                        message.put("channelId", new String(update.partitionKey().getKey().array()));
 
                         System.out.println("clt.toString(cfMetaData) " + clt.toString(cfMetaData));
                         System.out.println("clt.getRawValues() " + new String(clt.getRawValues()[0].array()));
