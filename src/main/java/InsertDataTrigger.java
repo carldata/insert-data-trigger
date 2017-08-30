@@ -17,7 +17,6 @@ import org.json.simple.JSONObject;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -28,7 +27,6 @@ public class InsertDataTrigger implements ITrigger {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Hello " + dateFormat.format(new Date()));
         System.out.println("This Insert Data Trigger");
-        System.out.println("default charset " + Charset.defaultCharset());      //check if it's important
 
         try {
             UnfilteredRowIterator it = update.unfilteredIterator();
@@ -84,7 +82,7 @@ public class InsertDataTrigger implements ITrigger {
                                 else
                                     message.clear();    //clear message, if cell was deleted we don't want to inform Kafka about that change at least for now
                             }
-                            //System.out.println("un.toString()" + un.toString(cfMetaData));
+                            //System.out.println("un.toString(cfMetaData)" + un.toString(cfMetaData));
 
                             if (!message.isEmpty()) {
                                 System.out.println(message.toString());
@@ -107,7 +105,6 @@ public class InsertDataTrigger implements ITrigger {
 
 
     private static Properties loadProperties() {
-        //System.out.println("Loading Properties");
         Properties properties = new Properties();
         InputStream stream = InsertDataTrigger.class.getClassLoader().getResourceAsStream("InsertDataTrigger.properties");
         try {
