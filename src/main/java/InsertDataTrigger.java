@@ -54,20 +54,19 @@ public class InsertDataTrigger implements ITrigger {
                         message.put("timestamp", new String(clt.getRawValues()[0].array())); //getting clustering colums of primary key in this case it's only one column timestamp
 
                         Row row = update.getRow(clt);
-                        if(row.deletion().isLive()) {   //checking if it is not row deletion
-                            //Iterator<Cell> cells = update.getRow(clt).cells().iterator();
+                        if (row.deletion().isLive()) {   //checking if it is not row deletion
                             Iterator<Cell> cells = row.cells().iterator();
 
-            //                Iterator<ColumnDefinition> columnDefinitions = partition.getRow(clt).columns().iterator();
-            //                while(columnDefinitions.hasNext()){
-            //                    ColumnDefinition cDef = columnDefinitions.next();
-            //
-            //                    System.out.println("cDef.cfName " +  cDef.cfName);
-            //                    System.out.println("cDef.ksName " +  cDef.ksName);
-            //                    System.out.println("cDef.kind.toString() " +  cDef.kind.toString());
-            //                    System.out.println("cDef.name.toString() " +  cDef.name.toString());
-            //                    System.out.println("cDef.toString() " + cDef.toString());
-            //                }
+                            //                Iterator<ColumnDefinition> columnDefinitions = partition.getRow(clt).columns().iterator();
+                            //                while(columnDefinitions.hasNext()){
+                            //                    ColumnDefinition cDef = columnDefinitions.next();
+                            //
+                            //                    System.out.println("cDef.cfName " +  cDef.cfName);
+                            //                    System.out.println("cDef.ksName " +  cDef.ksName);
+                            //                    System.out.println("cDef.kind.toString() " +  cDef.kind.toString());
+                            //                    System.out.println("cDef.name.toString() " +  cDef.name.toString());
+                            //                    System.out.println("cDef.toString() " + cDef.toString());
+                            //                }
 
                             while (cells.hasNext()) {
                                 Cell cell = cells.next();
@@ -78,8 +77,7 @@ public class InsertDataTrigger implements ITrigger {
                                     Float value = cellValue.getFloat();
                                     System.out.println("copied cellValue " + value);
                                     message.put(cell.column().name.toString(), value);
-                                }
-                                else
+                                } else
                                     message.clear();    //clear message, if cell was deleted we don't want to inform Kafka about that change at least for now
                             }
                             //System.out.println("un.toString(cfMetaData)" + un.toString(cfMetaData));

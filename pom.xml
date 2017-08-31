@@ -3,12 +3,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+
     <properties>
+        <!--this makes build platform independent-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <build>
         <plugins>
+
+            <!--compiles java code to java 8 version-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -19,6 +23,7 @@
                 </configuration>
             </plugin>
 
+            <!--builds uber jar(jar containing all dependencies)-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -39,11 +44,11 @@
     </build>
 
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>io.github.carldata</groupId>
     <artifactId>InsertDataTrigger</artifactId>
     <version>1.0</version>
 
+    <!--here we define all the dependencies with appropriate versions it's similar to nuget-->
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.apache.cassandra/cassandra-all -->
         <dependency>
